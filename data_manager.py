@@ -7,6 +7,9 @@
 """
 from typing import Optional
 from .model import UserAttitude, GroupAttitude
+from .db_sync import SyncData
+
+from nekro_agent.api.core import logger
 
 async def update_user_attitude(
     store, 
@@ -17,6 +20,7 @@ async def update_user_attitude(
 ) -> None:
     """更新用户态度数据"""
     stored_user_json = await store.get(user_key=user_key, store_key="user_info")
+    logger.debug(f"更新用户 {user_key} 的数据，原始数据: {stored_user_json}")
     if stored_user_json:
         user_attitude = UserAttitude.model_validate_json(stored_user_json)
         if attitude is not None:
@@ -26,6 +30,16 @@ async def update_user_attitude(
         if other is not None:
             user_attitude.other = other
         await store.set(user_key=user_key, store_key="user_info", value=user_attitude.model_dump_json())
+    else:
+        await SyncData(store)
+        await update_user_attitude(
+            store,
+            user_key,
+            attitude=attitude,
+            relationship=relationship,
+            other=other,
+        )
+
 
 async def update_group_attitude(
     store, 
@@ -43,3 +57,11 @@ async def update_group_attitude(
         if other is not None:
             group_attitude.other = other
         await store.set(chat_key=chat_key, store_key="group_info", value=group_attitude.model_dump_json())
+    else:
+        await SyncData(store)
+        await update_group_attitude(
+            store,
+            chat_key,
+            attitude=attitude,
+            other=other,
+        )
