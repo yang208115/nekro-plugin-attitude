@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 @Time: 2024/07/29 17:00:00
-@Author: Trae
+@Author: Yang208115
 @File: db_sync.py
 @Desc: 数据库同步模块
 """

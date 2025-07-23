@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 @Time: 2024/07/29 16:25:01
-@Author: Trae
+@Author: Yang208115
 @File: data_manager.py
 @Desc: 数据管理模块
 """
-from typing import Optional
+from typing import Optional, Tuple, Union
 from .model import UserAttitude, GroupAttitude
 from .db_sync import SyncData
 
 from nekro_agent.api.core import logger
+from nekro_agent.models.db_plugin_data import DBPluginData
 
 async def update_user_attitude(
     store, 
@@ -65,3 +66,64 @@ async def update_group_attitude(
             attitude=attitude,
             other=other,
         )
+
+
+async def delete_user_attitude(store, user_key: str) -> Tuple[bool, str]:
+    """删除用户态度数据
+    
+    Args:
+        store: 存储对象
+        user_key: 用户ID
+        
+    Returns:
+        Tuple[bool, str]: (是否成功, 消息)
+    """
+    try:
+        # 检查用户是否存在
+        stored_user_json = await store.get(user_key=user_key, store_key="user_info")
+        if not stored_user_json:
+            return False, f"用户 {user_key} 不存在"
+        
+        # 从数据库中删除用户态度数据
+        a = await store.delete(user_key=user_key, store_key="user_info")
+        
+        if a == 0:
+            logger.debug(f"成功删除用户 {user_key} 的态度数据")
+            return True, f"成功删除用户 {user_key} 的态度数据"
+        else:
+            logger.warning(f"未能删除用户 {user_key} 的态度数据")
+            return False, f"未能删除用户 {user_key} 的态度数据"
+    except Exception as e:
+        logger.error(f"删除用户 {user_key} 的态度数据时出错: {e}")
+        return False, f"删除用户态度数据时出错: {e}"
+
+
+async def delete_group_attitude(store, chat_key: str) -> Tuple[bool, str]:
+    """删除群组态度数据
+    
+    Args:
+        store: 存储对象
+        chat_key: 群组ID
+        
+    Returns:
+        Tuple[bool, str]: (是否成功, 消息)
+    """
+    try:
+        # 检查群组是否存在
+        stored_group_json = await store.get(chat_key=chat_key, store_key="group_info")
+        if not stored_group_json:
+            return False, f"群组 {chat_key} 不存在"
+        
+        # 从数据库中删除群组态度数据
+        a = await store.delete(chat_key=chat_key, store_key="group_info")
+
+        
+        if a == 0:
+            logger.debug(f"成功删除群组 {chat_key} 的态度数据")
+            return True, f"成功删除群组 {chat_key} 的态度数据"
+        else:
+            logger.warning(f"未能删除群组 {chat_key} 的态度数据")
+            return False, f"未能删除群组 {chat_key} 的态度数据"
+    except Exception as e:
+        logger.error(f"删除群组 {chat_key} 的态度数据时出错: {e}")
+        return False, f"删除群组态度数据时出错: {e}"
