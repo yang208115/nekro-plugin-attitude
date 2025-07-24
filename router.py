@@ -11,6 +11,7 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from nekro_agent.models.db_plugin_data import DBPluginData
+from nekro_agent.api.core import logger
 
 from .model import UserAttitude, GroupAttitude
 from .data_manager import update_user_attitude, update_group_attitude, delete_user_attitude, delete_group_attitude

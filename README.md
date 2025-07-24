@@ -8,6 +8,16 @@
 
 **Nekro Plugin Attitude** 是一个为 Nekro Agent 设计的智能态度管理插件，它赋予 AI 对不同用户和群组展现个性化态度的能力。通过动态记录和分析交互历史，AI 能够形成对每个用户的独特印象，并在对话中表现出更加真实和情境化的行为模式。
 
+## 🌐 Web管理界面
+
+当启用 `WebUi` 配置后，您可以通过以下地址访问Web管理界面：
+
+**默认访问地址**: `http://localhost:8021/plugins/yang208115.nekro_plugin_attitude/`
+
+> 💡 **提示**: 如果您修改了Nekro Agent的端口配置，请相应调整URL中的端口号。
+> 
+> 🔧 **配置要求**: 确保在插件配置中设置 `WebUi: true` 并重启Nekro Agent。
+
 ## ✨ 核心功能
 
 ### 🎯 智能态度系统

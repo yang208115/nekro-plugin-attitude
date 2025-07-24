@@ -234,7 +234,7 @@
             <div style="position: absolute; right: 20px; display: flex; align-items: center; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 5px;">
                     <label for="ip-input" style="color: #e0e0e0; font-size: 0.9rem; white-space: nowrap;">服务器IP:</label>
-                    <input type="text" id="ip-input" class="form-control" style="width: 150px; padding: 8px 12px; font-size: 0.9rem;" placeholder="192.168.2.108" value="192.168.2.108" onchange="updateBaseUrl()">
+                    <input type="text" id="ip-input" class="form-control" style="width: 150px; padding: 8px 12px; font-size: 0.9rem;" placeholder="IP地址" value="0.0.0.0" onchange="updateBaseUrl()">
                 </div>
                 <button class="btn btn-primary" onclick="getAllUsers(); getAllGroups();"><i class="bi bi-arrow-clockwise"></i> 刷新数据</button>
                 <button id="batch-test-btn" class="btn btn-info" onclick="runAllTests()" style="display: none;"><i class="bi bi-play"></i> 批量测试</button>
@@ -1333,6 +1333,18 @@
         
         // 页面加载完成后自动获取数据
         window.addEventListener('load', function() {
+            // 从地址栏获取主机名并设置到IP输入框
+            const ipInput = document.getElementById('ip-input');
+            const currentHost = window.location.hostname;
+            if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+                ipInput.value = currentHost;
+            } else {
+                // 如果是localhost或127.0.0.1，保持原来的默认值
+                ipInput.value = window.location.hostname || '0.0.0.0';
+            }
+            // 更新BASE_URL
+            updateBaseUrl();
+            
             console.log('态度插件测试页面已加载');
             console.log('API基础地址:', BASE_URL);
             
