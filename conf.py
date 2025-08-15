@@ -7,7 +7,7 @@ plugin = NekroPlugin(
     description="可以让AI对不同的人有着不同的态度",
     author="yang208115",
     version="0.0.3",
-    url="",
+    url="https://github.com/yang208115/nekro-plugin-attitude",
     support_adapter=["onebot_v11"],
 )
 @plugin.mount_config()
