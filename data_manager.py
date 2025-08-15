@@ -5,16 +5,17 @@
 @File: data_manager.py
 @Desc: 数据管理模块
 """
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 from .model import UserAttitude, GroupAttitude
 from .db_sync import SyncData
 
 from nekro_agent.api.core import logger
-from nekro_agent.models.db_plugin_data import DBPluginData
 
 async def update_user_attitude(
     store, 
     user_key: str, 
+    username: Optional[str] = None,
+    nickname: Optional[str] = None,
     attitude: Optional[str] = None,
     relationship: Optional[str] = None,
     other: Optional[str] = None
@@ -26,20 +27,26 @@ async def update_user_attitude(
         user_attitude = UserAttitude.model_validate_json(stored_user_json)
         if attitude is not None:
             user_attitude.attitude = attitude
+        if username is not None:
+            user_attitude.username = username
+        if nickname is not None:
+            user_attitude.nickname = nickname
         if relationship is not None:
             user_attitude.relationship = relationship
         if other is not None:
             user_attitude.other = other
         await store.set(user_key=user_key, store_key="user_info", value=user_attitude.model_dump_json())
     else:
-        await SyncData(store)
-        await update_user_attitude(
-            store,
-            user_key,
-            attitude=attitude,
-            relationship=relationship,
-            other=other,
+        # 如果用户不存在，则创建新的用户态度对象
+        user_attitude = UserAttitude(
+            user_id=user_key,
+            username=username or "",
+            nickname=nickname or "",
+            attitude=attitude or "",
+            relationship=relationship or "",
+            other=other or ""
         )
+        await store.set(user_key=user_key, store_key="user_info", value=user_attitude.model_dump_json())
 
 
 async def update_group_attitude(
@@ -59,13 +66,14 @@ async def update_group_attitude(
             group_attitude.other = other
         await store.set(chat_key=chat_key, store_key="group_info", value=group_attitude.model_dump_json())
     else:
-        await SyncData(store)
-        await update_group_attitude(
-            store,
-            chat_key,
-            attitude=attitude,
-            other=other,
+        # 如果群组不存在，则创建新的群组态度对象
+        group_attitude = GroupAttitude(
+            group_id=chat_key,
+            channel_name="", # 默认值，后续可能需要从其他地方获取
+            attitude=attitude or "",
+            other=other or ""
         )
+        await store.set(chat_key=chat_key, store_key="group_info", value=group_attitude.model_dump_json())
 
 
 async def delete_user_attitude(store, user_key: str) -> Tuple[bool, str]:

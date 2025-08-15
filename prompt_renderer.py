@@ -13,11 +13,11 @@ config: BasicConfig = plugin.get_config(BasicConfig)
 
 
 # 英文提示词模板
-USER_PROMPT_TEMPLATE_EN = "For user {username} (ID: {user_id}), your attitude should be {attitude}. Their relationship to you is {relationship}. Additional notes: {other}."
+USER_PROMPT_TEMPLATE_EN = "For user {username} (ID: {user_id}), you should proactively call them '{nickname}'. Your attitude towards them should be {attitude}. Their relationship to you is {relationship}. Additional notes: {other}."
 GROUP_PROMPT_TEMPLATE_EN = "In the group chat '{channel_name}' (ID: {group_id}), your general attitude should be {attitude}. Additional notes for this group: {other}."
 
 # 中文提示词模板
-USER_PROMPT_TEMPLATE_CN = "对于用户 {username}（QQ号：{user_id}），你对他的态度应该是{attitude}。他与你的关系是{relationship}。额外备注：{other}。"
+USER_PROMPT_TEMPLATE_CN = "对于用户 {username}（QQ号：{user_id}），你要主动称呼他为“{nickname}”。你对他的态度应该是{attitude}。他与你的关系是{relationship}。额外备注：{other}。"
 GROUP_PROMPT_TEMPLATE_CN = "在群聊 '{channel_name}'（群号：{group_id}）中，你的总体态度应该是{attitude}。该群组的额外备注：{other}。"
 
 def render_user_prompt(user_attitude: UserAttitude) -> str:
@@ -34,6 +34,7 @@ def render_user_prompt(user_attitude: UserAttitude) -> str:
         id=user_attitude.id,
         user_id=user_attitude.user_id,
         username=user_attitude.username,
+        nickname=user_attitude.nickname,
         attitude=user_attitude.attitude,
         relationship=user_attitude.relationship,
         other=user_attitude.other

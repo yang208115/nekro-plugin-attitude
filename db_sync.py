@@ -19,6 +19,7 @@ async def SyncData(store):
     如果数据不存在，则添加。
     如果数据已存在但信息不一致，则更新。
     """
+
     # 同步用户数据
     users_raw_data = await get_user_data()
     for user_data in users_raw_data:
@@ -29,8 +30,9 @@ async def SyncData(store):
             id=user_data["id"],
             user_id=user_key,
             username=user_data["username"],
+            nickname="",  # 默认值
             attitude="",  # 默认值
-            relationship="", # 默认值
+            relationship="",  # 默认值
             other=""  # 默认值
         )
 
@@ -39,11 +41,12 @@ async def SyncData(store):
             await store.set(user_key=user_key, store_key="user_info", value=user_attitude.model_dump_json())
         else:
             stored_user = UserAttitude.model_validate_json(stored_user_json)
-            # 保留已存在的 attitude 和 other 字段
+            # 保留已存在的 attitude, relationship, other, nickname 字段
             user_attitude.attitude = stored_user.attitude
             user_attitude.relationship = stored_user.relationship
             user_attitude.other = stored_user.other
-            if stored_user.id != user_data["id"] or stored_user.username != user_data["username"]:
+            user_attitude.nickname = stored_user.nickname
+            if stored_user.username != user_data["username"]:
                 logger.debug(f"用户 {user_key} 的数据不一致，正在更新...")
                 await store.set(user_key=user_key, store_key="user_info", value=user_attitude.model_dump_json())
 
@@ -69,7 +72,7 @@ async def SyncData(store):
             # 保留已存在的 attitude 和 other 字段
             group_attitude.attitude = stored_group.attitude
             group_attitude.other = stored_group.other
-            if stored_group.id != group_data["id"] or stored_group.channel_name != group_data["channel_name"]:
+            if stored_group.channel_name != group_data["channel_name"]:
                 logger.debug(f"群组 {group_key} 的数据不一致，正在更新...")
                 await store.set(chat_key=group_key, store_key="group_info", value=group_attitude.model_dump_json())
 

@@ -7,11 +7,12 @@
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from fastapi.responses import FileResponse
+import os
 
 from nekro_agent.models.db_plugin_data import DBPluginData
-from nekro_agent.api.core import logger
 
 from .model import UserAttitude, GroupAttitude
 from .data_manager import update_user_attitude, update_group_attitude, delete_user_attitude, delete_group_attitude
@@ -22,6 +23,8 @@ router = APIRouter()
 # 请求和响应模型
 class UserAttitudeUpdate(BaseModel):
     """用户态度更新请求模型"""
+    username: Optional[str] = None
+    nickname: Optional[str] = None
     attitude: Optional[str] = None
     relationship: Optional[str] = None
     other: Optional[str] = None
@@ -32,17 +35,34 @@ class GroupAttitudeUpdate(BaseModel):
     other: Optional[str] = None
 
 @router.get("/")
-async def webui():
-    from fastapi.responses import FileResponse
-    import os
-    
+async def webui():  
     # 获取当前文件所在目录
     current_dir = os.path.dirname(os.path.abspath(__file__))
     # 构建web.html的完整路径
-    html_path = os.path.join(current_dir, "web", "web.html")
+    html_path = os.path.join(current_dir, "web", "index.html")
     
     # 返回HTML文件
     return FileResponse(html_path, media_type="text/html")
+
+@router.get("/style.css")
+async def webui():
+    # 获取当前文件所在目录
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 构建web.html的完整路径
+    html_path = os.path.join(current_dir, "web", "style.css")
+    
+    # 返回HTML文件
+    return FileResponse(html_path, media_type="text/css")
+
+@router.get("/script.js")
+async def webui():
+    # 获取当前文件所在目录
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 构建web.html的完整路径
+    html_path = os.path.join(current_dir, "web", "script.js")
+    
+    # 返回HTML文件
+    return FileResponse(html_path, media_type="text/js")
 
 
 # 用户态度相关路由
@@ -91,6 +111,8 @@ async def update_user(user_id: str, update_data: UserAttitudeUpdate):
         await update_user_attitude(
             plugin.store,
             user_id,
+            username=update_data.username,
+            nickname=update_data.nickname,
             attitude=update_data.attitude,
             relationship=update_data.relationship,
             other=update_data.other

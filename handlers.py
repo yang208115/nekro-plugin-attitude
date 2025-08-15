@@ -9,16 +9,12 @@
 """
 
 # 导入所有子模块的功能以保持向后兼容性
-from .validators import validate_user_key, validate_chat_key, validate_attitude_data
 from .decorators import retry_on_failure
 from .tools import update_user_attitude_tool, update_group_attitude_tool
 from .prompt_injection import attitude
 
 # 为了向后兼容，重新导出所有函数
 __all__ = [
-    'validate_user_key',
-    'validate_chat_key', 
-    'validate_attitude_data',
     'retry_on_failure',
     'update_user_attitude_tool',
     'update_group_attitude_tool',

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>态度管理系统 - 后台控制面板</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <div class="header" style="justify-content: center;">
+            <h1 style="margin: 0 auto;">态度插件后台管理系统</h1>
+            <div style="position: absolute; right: 20px; display: flex; align-items: center; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <label for="ip-input" style="color: #e0e0e0; font-size: 0.9rem; white-space: nowrap;">服务器IP:</label>
+                    <input type="text" id="ip-input" class="form-control" style="width: 150px; padding: 8px 12px; font-size: 0.9rem;" placeholder="IP地址" value="0.0.0.0" onchange="updateBaseUrl()">
+                            </div>
+            </div>
+        </div>
+    </div>
+                <button class="btn btn-primary" onclick="getAllUsers(); getAllGroups();"><i class="bi bi-arrow-clockwise"></i> 刷新数据</button>
+                <button id="batch-test-btn" class="btn btn-info" onclick="runAllTests()" style="display: none;"><i class="bi bi-play"></i> 批量测试</button>
+            </div>
+        <div>
+            
+            <!-- 统计卡片 -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon stat-users">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="user-count">0</h3>
+                        <p>用户总数</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon stat-groups">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="group-count">0</h3>
+                        <p>群组总数</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 批量测试响应容器 -->
+            <div id="batch-response-container" class="response-container" style="display: none;">
+                <div class="response-header">
+                    <h3>批量测试结果</h3>
+                    <button class="btn btn-sm btn-danger" onclick="document.getElementById('batch-response-container').style.display='none';"><i class="bi bi-x"></i></button>
+                </div>
+                <pre id="batch-response" class="response"></pre>
+            </div>
+            
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="openTab(event, 'users-tab')">用户管理</button>
+                    <button class="tab-button" onclick="openTab(event, 'groups-tab')">群组管理</button>
+                </div>
+                <div id="users-tab" class="tab-content active">
+                    <!-- 用户态度管理 -->
+                    <div class="card" id="users-section" style="flex: 1;">
+                <div class="card-header">
+                    <h2><i class="bi bi-person"></i> 用户态度管理</h2>
+                    <button class="btn btn-success" onclick="getAllUsers()"><i class="bi bi-list"></i> 获取所有用户</button>
+                </div>
+                
+                <!-- 获取所有用户态度 -->
+                <div class="form-group">
+                    
+                    <!-- 搜索和筛选 -->
+                    <div class="search-filter-container" style="margin-bottom: 15px;">
+                        <div class="row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <input type="text" class="form-control" id="user-search" placeholder="搜索QQ号" onkeyup="filterUserTable()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用户表格视图 -->
+                    <div class="table-container" style="margin-bottom: 20px; display: none;" id="users-table-container">
+                        <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3>用户列表</h3>
+                            <div>
+                                <button class="btn btn-sm btn-info" onclick="exportUserData()"><i class="bi bi-download"></i> 导出数据</button>
+                                <select class="form-control" id="users-per-page" style="display: inline-block; width: auto; margin-left: 10px;" onchange="changeUsersPerPage()">
+                                    <option value="10">10条/页</option>
+                                    <option value="20">20条/页</option>
+                                    <option value="50">50条/页</option>
+                                    <option value="100">100条/页</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table" id="users-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortUserTable(0)">QQ号 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th onclick="sortUserTable(1)">用户名称 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th onclick="sortUserTable(4)">称呼 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th onclick="sortUserTable(2)">态度值 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th onclick="sortUserTable(3)">关系 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th>其他信息</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body">
+                                    <!-- 用户数据将通过JavaScript动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <div class="pagination-info">显示 <span id="users-showing-start">0</span>-<span id="users-showing-end">0</span> 条，共 <span id="users-total-count">0</span> 条</div>
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-primary" id="users-prev-page" onclick="prevUsersPage()"><i class="bi bi-chevron-left"></i> 上一页</button>
+                                <span class="pagination-pages" id="users-pagination-pages">第 <span id="users-current-page">1</span>/<span id="users-total-pages">1</span> 页</span>
+                                <button class="btn btn-sm btn-primary" id="users-next-page" onclick="nextUsersPage()">下一页 <i class="bi bi-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="response-container" id="users-response-container" style="display:none;">
+                        <div class="response-header">
+                            <h3>响应结果</h3>
+                            <button class="btn btn-sm btn-primary" onclick="document.getElementById('users-response-container').style.display='none';"><i class="bi bi-x"></i></button>
+                        </div>
+                        <div id="users-response" class="response"></div>
+                    </div>
+                </div>
+                
+                <!-- 更新用户态度 -->
+                <div class="form-group">
+                    <h3>更新用户态度</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="user-id">QQ号:</label>
+                        <input type="text" class="form-control" id="user-id" placeholder="例如: 123456789" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="user-username">用户名称:</label>
+                        <input type="text" class="form-control" id="user-username" placeholder="例如: 张三">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="user-nickname">称呼:</label>
+                        <input type="text" class="form-control" id="user-nickname" placeholder="例如: 小张">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="user-attitude">态度值:</label>
+                        <input type="text" class="form-control" id="user-attitude" value="" placeholder="输入态度值 (支持数字或文字)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="user-relationship">用户关系:</label>
+                        <input type="text" class="form-control" id="user-relationship" placeholder="输入关系（如：friend, enemy, neutral）">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="user-other">用户其他信息:</label>
+                        <textarea class="form-control" id="user-other" rows="3" placeholder="输入其他信息"></textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="updateUser()"><i class="bi bi-save"></i> 更新用户态度</button>
+                    
+                    <div class="response-container" id="user-update-response-container" style="display:none;">
+                        <div class="response-header">
+                            <h3>响应结果</h3>
+                            <button class="btn btn-sm btn-primary" onclick="document.getElementById('user-update-response-container').style.display='none';"><i class="bi bi-x"></i></button>
+                        </div>
+                        <div id="user-update-response" class="response"></div>
+                    </div>
+                </div>
+            </div>
+            
+                </div>
+                <div id="groups-tab" class="tab-content">
+                    <!-- 群组态度管理 -->
+                    <div class="card" id="groups-section">
+                <div class="card-header">
+                    <h2><i class="bi bi-people"></i> 群组态度管理</h2>
+                    <button class="btn btn-success" onclick="getAllGroups()"><i class="bi bi-list"></i> 获取所有群组</button>
+                </div>
+                
+                <!-- 获取所有群组态度 -->
+                <div class="form-group">
+                    
+                    <!-- 搜索和筛选 -->
+                    <div class="search-filter-container" style="margin-bottom: 15px;">
+                        <div class="row" style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <div style="flex: 1;">
+                                <input type="text" class="form-control" id="group-search" placeholder="搜索群号或群组名称..." onkeyup="filterGroupTable()">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 群组表格视图 -->
+                    <div class="table-container" style="margin-bottom: 20px; display: none;" id="groups-table-container">
+                        <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3>群组列表</h3>
+                            <div>
+                                <button class="btn btn-sm btn-info" onclick="exportGroupData()"><i class="bi bi-download"></i> 导出数据</button>
+                                <select class="form-control" id="groups-per-page" style="display: inline-block; width: auto; margin-left: 10px;" onchange="changeGroupsPerPage()">
+                                    <option value="10">10条/页</option>
+                                    <option value="20">20条/页</option>
+                                    <option value="50">50条/页</option>
+                                    <option value="100">100条/页</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table" id="groups-table">
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortGroupTable(0)">群号 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th onclick="sortGroupTable(1)">群组名称 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th onclick="sortGroupTable(2)">态度值 <i class="bi bi-arrow-down-up"></i></th>
+                                        <th>其他信息</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="groups-table-body">
+                                    <!-- 群组数据将通过JavaScript动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                            <div class="pagination-info">显示 <span id="groups-showing-start">0</span>-<span id="groups-showing-end">0</span> 条，共 <span id="groups-total-count">0</span> 条</div>
+                            <div class="pagination-controls">
+                                <button class="btn btn-sm btn-primary" id="groups-prev-page" onclick="prevGroupsPage()"><i class="bi bi-chevron-left"></i> 上一页</button>
+                                <span class="pagination-pages" id="groups-pagination-pages">第 <span id="groups-current-page">1</span>/<span id="groups-total-pages">1</span> 页</span>
+                                <button class="btn btn-sm btn-primary" id="groups-next-page" onclick="nextGroupsPage()">下一页 <i class="bi bi-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="response-container" id="groups-response-container" style="display:none;">
+                        <div class="response-header">
+                            <h3>响应结果</h3>
+                            <button class="btn btn-sm btn-primary" onclick="document.getElementById('groups-response-container').style.display='none';"><i class="bi bi-x"></i></button>
+                        </div>
+                        <div id="groups-response" class="response"></div>
+                    </div>
+                </div>
+                
+                <!-- 更新群组态度 -->
+                <div class="form-group">
+                    <h3>更新群组态度</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="group-id">群号:</label>
+                        <input type="text" class="form-control" id="group-id" placeholder="例如: 987654321">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="group-attitude">态度值:</label>
+                        <input type="text" class="form-control" id="group-attitude" value="" placeholder="输入态度值 (支持数字或文字)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="group-other">群组其他信息:</label>
+                        <textarea class="form-control" id="group-other" rows="3" placeholder="输入其他信息"></textarea>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="updateGroup()"><i class="bi bi-save"></i> 更新群组态度</button>
+                    
+                    <div class="response-container" id="group-update-response-container" style="display:none;">
+                        <div class="response-header">
+                            <h3>响应结果</h3>
+                            <button class="btn btn-sm btn-primary" onclick="document.getElementById('group-update-response-container').style.display='none';"><i class="bi bi-x"></i></button>
+                        </div>
+                        <div id="group-update-response" class="response"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

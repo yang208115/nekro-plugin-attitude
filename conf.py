@@ -6,7 +6,7 @@ plugin = NekroPlugin(
     module_name="nekro_plugin_attitude",
     description="可以让AI对不同的人有着不同的态度",
     author="yang208115",
-    version="0.0.2",
+    version="0.0.3",
     url="",
     support_adapter=["onebot_v11"],
 )
@@ -25,3 +25,5 @@ class BasicConfig(ConfigBase):
         title="提示词语言",
         description="设置AI提示词的语言，CN为中文，EN为英文",
     )
+    
+config: BasicConfig = plugin.get_config(BasicConfig)

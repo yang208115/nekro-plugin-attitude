@@ -6,12 +6,14 @@
 import time
 from typing import List, Optional, Set
 
+from .db_sync import SyncData
 from .conf import plugin, BasicConfig
 from .model import UserAttitude, GroupAttitude
 from .prompt_renderer import render_user_prompt, render_group_prompt
 
 from nekro_agent.api.schemas import AgentCtx
-from nekro_agent.api.core import logger, config
+from nekro_agent.api.core import logger
+from nekro_agent.api.core import config as NA_config
 from nekro_agent.models.db_chat_channel import DBChatChannel
 from nekro_agent.models.db_chat_message import DBChatMessage
 from pydantic import ValidationError
@@ -34,6 +36,8 @@ async def attitude(_ctx: AgentCtx) -> str:
     Raises:
         RuntimeError: 当提示生成过程中发生错误时抛出
     """   
+
+
     try:
         logger.debug("开始生成态度管理提示")
         
@@ -124,11 +128,11 @@ async def attitude(_ctx: AgentCtx) -> str:
             db_chat_channel: DBChatChannel = await DBChatChannel.get_channel(chat_key=_ctx.from_chat_key)
             recent_chat_messages: List[DBChatMessage] = await (
                 DBChatMessage.filter(
-                    send_timestamp__gte=max(int(time.time() - config.AI_CHAT_CONTEXT_EXPIRE_SECONDS), db_chat_channel.conversation_start_time.timestamp()),
+                    send_timestamp__gte=max(int(time.time() - NA_config.AI_CHAT_CONTEXT_EXPIRE_SECONDS), db_chat_channel.conversation_start_time.timestamp()),
                     chat_key=_ctx.from_chat_key,
                 )
                 .order_by("-send_timestamp")
-                .limit(config.AI_CHAT_CONTEXT_MAX_LENGTH)
+                .limit(NA_config.AI_CHAT_CONTEXT_MAX_LENGTH)
             )
         except (OperationalError, IntegrityError) as e:
             logger.error(f"获取聊天消息时数据库错误: chat_key={_ctx.from_chat_key}, error={e}")
@@ -158,6 +162,12 @@ async def attitude(_ctx: AgentCtx) -> str:
                     user_attitude: UserAttitude = UserAttitude.model_validate_json(stored_user_json)
                     prompt_parts.append(render_user_prompt(user_attitude))
                     logger.debug(f"加载用户态度数据: {user_key}")
+                else:
+                    await SyncData(plugin.store)
+                    stored_user_json: Optional[str] = await store.get(user_key=user_key, store_key="user_info")
+                    user_attitude: UserAttitude = UserAttitude.model_validate_json(stored_user_json)
+                    prompt_parts.append(render_user_prompt(user_attitude))
+                    logger.debug(f"创建新的用户态度数据: {user_key}")
             except ValidationError as e:
                 logger.error(f"用户态度数据格式错误: user_key={user_key}, error={e}")
                 continue
@@ -175,6 +185,8 @@ async def attitude(_ctx: AgentCtx) -> str:
                 group_attitude: GroupAttitude = GroupAttitude.model_validate_json(stored_group_json)
                 prompt_parts.append(render_group_prompt(group_attitude))
                 logger.debug(f"加载群组态度数据: {_ctx.from_chat_key}")
+            else:
+                logger.debug(f"群组态度数据 {_ctx.from_chat_key} 不存在，跳过加载。")
         except ValidationError as e:
             logger.error(f"群组态度数据格式错误: chat_key={_ctx.from_chat_key}, error={e}")
         except (OperationalError, IntegrityError) as e:
