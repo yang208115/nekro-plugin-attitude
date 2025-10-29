@@ -12,7 +12,7 @@
 
 当启用 `WebUi` 配置后，您可以通过以下地址访问Web管理界面：
 
-**默认访问地址**: `http://localhost:8021/plugins/yang208115.nekro_plugin_attitude/`
+**默认访问地址**: [/plugins/yang208115.nekro_plugin_attitude/](/plugins/yang208115.nekro_plugin_attitude/)
 
 > 💡 **提示**: 如果您修改了Nekro Agent的端口配置，请相应调整URL中的端口号。
 > 

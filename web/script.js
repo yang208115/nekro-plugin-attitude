@@ -4,9 +4,19 @@ let BASE_URL = 'http://localhost:8021/plugins/yang208115.nekro_plugin_attitude';
 // 更新BASE_URL函数
 function updateBaseUrl() {
     const ipInput = document.getElementById('ip-input');
-    const newIp = ipInput.value.trim();
-    if (newIp) {
-        BASE_URL = `http://${newIp}:8021/plugins/yang208115.nekro_plugin_attitude`;
+    const newHost = ipInput.value.trim();
+    if (newHost) {
+        // 检测输入是否为域名或IP地址
+        // 如果包含字母或者包含点且不是纯IP格式，则认为是域名
+        const isDomain = /^[a-zA-Z]/.test(newHost) || (newHost.includes('.') && !/^\d+\.\d+\.\d+\.\d+$/.test(newHost));
+
+        if (isDomain) {
+            // 域名访问，通常使用80端口
+            BASE_URL = `http://${newHost}/plugins/yang208115.nekro_plugin_attitude`;
+        } else {
+            // IP地址访问，使用8021端口
+            BASE_URL = `http://${newHost}:8021/plugins/yang208115.nekro_plugin_attitude`;
+        }
         console.log('BASE_URL已更新为:', BASE_URL);
     }
 }
